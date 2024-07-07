@@ -95,7 +95,7 @@
     }
 
     // Decrypt Function
-    function retrieveGradeByStudentNo(csvData, studentNumber) {
+    function getGradeByStudentNumber(csvData, studentNumber) {
       const lines = csvData.trim().split('\n');
       
       const headers = lines[0].split(',');
@@ -115,13 +115,12 @@
           }
       }
 
-      return 'Student not found. Please check your input and try again.';
+      return 'n/a (Student number not found)';
     }
 
-    //Test Submit Function
     function retrieveGrade() {
       const fileInput = document.getElementById('customFileB');
-      const studentNumber = document.getElementById('studentsTextInputA').value.trim();
+      const studentNumber = document.getElementById('studentsTextInputA').value;
       const resultElement = document.getElementById('studentsOutput');
 
       if (!fileInput.files.length) {
@@ -135,14 +134,8 @@
 
       reader.onload = function(e) {
         const csvData = e.target.result;
-        const grade = retrieveGradeByStudentNo(csvData, studentNumber);
-        console.log("StudentNo: " + studentNumber)
-        console.log("Grade: " + grade)
-        if (studentNumber === "") {
-          resultElement.textContent = 'Invalid student number. Please try again.'
-        } else {
-          resultElement.textContent = `The grade for student number ${studentNumber} is: ${grade}`;
-        }
+        const grade = getGradeByStudentNumber(csvData, studentNumber);
+        resultElement.textContent = `The grade for student number ${studentNumber} is: ${grade}`;
       };
 
       reader.onerror = function() {
@@ -159,21 +152,36 @@
           <div class="col-sm">
             <h1><span class="label label-primary">Teachers</span></h1> 
             <label class="form-label my-3" for="customFileA">File Upload (Existing CSV)</label>
+            <form>
               <input type="file" class="form-control" id="customFileA" accept=".csv,.xls,.xlsx" onchange="validateFileInput(this.id);">
               <input type="text" class="form-control my-3" id="teachersTextInput" placeholder="Enter secret key/passphrase">
               <div class="d-flex justify-content-center">
                 <input type="submit" class="my-2 justify-content-center" id="teachersSubmit" value="Encrypt" onclick="return false;" disabled>
               </div>
+              <div id="teachersOutput" ><p class="text-danger">Please fill out all required fields.</p></div>
+            </form>
+            
             <hr class="my-12"/>
-            <div id="teachersOutput" ><p class="text-danger">Please fill out all required fields.</p></div>
+            <button href="#collapso" type="button" class="btn btn-secondary btn-lg mt-3 mb-3" data-toggle="collapse">Generate Sample CSV</button>
+            <div id="collapso" class="collapse border p-3 mb-2 bg-secondary text-white">
+
+              <!-- <label for="rangeCol" class="form-label">No. of Columns</label>
+              <input type="range" class="form-range ml-3" id="rangeCol" min="1" max="20" value="10">
+              <output id="outputCol"></output><br> -->
+
+              <label for="rangeRow" class="form-label">No. of Students</label>
+              <input type="range" class="form-range ml-3 mx-3" id="rangeRow" min="1" max="200" value="50" step="1">
+              <output id="outputRow" class="font-weight-bold"></output><br>
+              <button type="button" class="btn btn-outline-light my-3" onclick="generateCSV();">Generate</button>
+          </div>
           </div>
             <div class="linesu ml-3 mr-3"></div>
-          
 
           <!-- Students -->
           <div class="col-sm">
             <h1><span class="label label-default">Students</span></h1>
             <label class="form-label my-3" for="customFileB" pattern="^.+\.(xlsx|xls|csv)$">File Upload (Existing CSV)</label>
+            <form>
               <input type="file" class="form-control" id="customFileB" accept=".csv,.xls,.xlsx" onchange="validateFileInput(this.id);"/>
               <div class="d-flex justify-content-center">
                 <input type="text" class="form-control my-3 mr-1" id="studentsTextInputA" placeholder="Enter Student No."/>
@@ -182,25 +190,15 @@
               <div class="d-flex justify-content-center">
                 <input type="submit" class="my-2 justify-content-center" id="studentsSubmit" value="Decrypt" onclick="retrieveGrade();" disabled>
               </div>
+              <div id="studentsOutput" class="text-info"><p class="text-danger">Please fill out all required fields.</p></div>
+            </form>
+            
             <hr class="my-12"/>
-            <div id="studentsOutput" class="text-info"><p class="text-danger">Please fill out all required fields.</p></div>
           </div>
         </div>
         <hr class="hr hr-blurry" />
     </div>
 
-    <button href="#collapso" type="button" class="btn btn-secondary btn-lg mt-3 mb-3" data-toggle="collapse">Generate Sample CSV</button>
-    <div id="collapso" class="collapse border p-3 mb-2 bg-secondary text-white">
-
-      <!-- <label for="rangeCol" class="form-label">No. of Columns</label>
-      <input type="range" class="form-range ml-3" id="rangeCol" min="1" max="20" value="10">
-      <output id="outputCol"></output><br> -->
-
-      <label for="rangeRow" class="form-label">No. of Students</label>
-      <input type="range" class="form-range ml-3 mx-3" id="rangeRow" min="1" max="200" value="50" step="1">
-      <output id="outputRow" class="font-weight-bold"></output><br>
-      <button type="button" class="btn btn-outline-light my-3" onclick="generateCSV();">Generate</button>
-    </div>
     <script>
     var sliderRow = document.getElementById("rangeRow");
     var outputRow = document.getElementById("outputRow");
@@ -208,6 +206,7 @@
     sliderRow.oninput = function() {outputRow.innerHTML = this.value;}
     </script>
 
+    <!-- Plugins -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
