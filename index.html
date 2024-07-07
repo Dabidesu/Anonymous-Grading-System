@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta charset="UTF-8">
     <title>Anonymous Grading System</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -12,12 +11,21 @@
         border-left: 3px solid rgba(69, 69, 69, 0.493);
         height: 500px;
       }
+      
+      input[type='number'] {
+        appearance:textfield;
+      }
+
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+      }
     </style>
 </head>
   <body>
     <script>
 
-    //File Input Validation
+    // File Input Validation
     function validateFileInput(inputesto) {
       var elemento, btn;
       if(inputesto === "customFileA")
@@ -45,20 +53,6 @@
       elemento.innerHTML="<p class='text-danger'>Invalid file. Only .csv, .xls, or .xlsx files are allowed.</p>";
       btn.disabled = true;
     }
-
-    // function validateTextInput(inputestwo) {
-    //   //To add later
-    // }
-
-    // function validateForm() {
-    //   const studentNo = document.getElementById('studentsTextInputA').value;
-    //   const submitButton = document.getElementById('studentsSubmit');
-    //   if (studentNo.trim() === "") {
-    //       submitButton.disabled = true;
-    //   } else {
-    //       submitButton.disabled = false;
-    //   }
-    // }
 
     // Generate CSV Function
     function generateCSV() {
@@ -94,6 +88,55 @@
       }
     }
 
+    // Download CSV Function
+    function downloadFile(content, fileName, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Encrypt Function
+    function encryptCSV(csvContent, key) {
+            const rows = csvContent.split('\n');
+            const encryptedRows = rows.map((row, index) => {
+                let columns = row.split(',');
+                if (index !== 0 && columns.length > 1) { //Skip header row
+                    columns[1] = CryptoJS.AES.encrypt(columns[1], key).toString();
+                }
+                columns = columns.slice(1); // Remove first column for anonymity
+                return columns.join(',');
+            });
+            return encryptedRows.join('\n');
+        }
+
+        function encrypt() {
+            const fileInput = document.getElementById('customFileA');
+            const key = document.getElementById('teachersTextInput').value;
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const csvData = e.target.result;
+                const encryptedCSV = encryptCSV(csvData, key);
+                // document.getElementById('output').textContent = encryptedCSV;
+                console.log(encryptedCSV)
+                downloadFile(encryptedCSV, 'encrypted.csv', 'text/csv');
+            };
+
+            if (file) {
+                reader.readAsText(file);
+            } else {
+                alert('Please select a CSV file.');
+            }
+        }
+
     // Decrypt Function
     function retrieveGradeByStudentNo(csvData, studentNumber) {
       const lines = csvData.trim().split('\n');
@@ -101,7 +144,7 @@
       const headers = lines[0].split(',');
 
       const studentNoIndex = headers.indexOf('Student No.');
-      //To fix (\r)
+      // To fix (\r)
       const gradeIndex = headers.indexOf('Grade (%)\r');
       if (studentNoIndex === -1 || gradeIndex === -1) {
           return '{Error: Invalid file format}';
@@ -118,17 +161,11 @@
       return 'Student not found. Please check your input and try again.';
     }
 
-    //Test Submit Function
+    // Test Submit Function
     function retrieveGrade() {
       const fileInput = document.getElementById('customFileB');
       const studentNumber = document.getElementById('studentsTextInputA').value;
       const resultElement = document.getElementById('studentsOutput');
-
-      if (!fileInput.files.length) {
-          resultElement.innerHTML = "<p class='text-danger'>Please select a file.</p>";
-          document.getElementById("studentsSubmit").disabled = true;
-          return;
-      }
 
       const file = fileInput.files[0];
       const reader = new FileReader();
@@ -137,17 +174,22 @@
         const csvData = e.target.result;
         const grade = Number(retrieveGradeByStudentNo(csvData, studentNumber));
         
-        console.log("StudentNo: " + studentNumber);
-        console.log("Grade: " + grade);
-        console.log(typeof studentNumber);
         if (studentNumber === "") {
           resultElement.innerHTML = "<p class='text-danger'>Invalid student number. Please try again.</p>";
         } else if (!Number.isInteger(grade)) {
           resultElement.innerHTML = "<p class='text-danger'>Student not found. Please try again.</p>";
         } else {
-          // resultElement.textContent = `The grade for student number ${studentNumber} is: ${grade}`;
-          resultElement.innerHTML = "<p class='text-success'>The grade for student number <b>" + studentNumber + "</b> is: <b>" + grade + "</b></p>";
+          let message = "";
+          if (grade < 75) {
+            message = "<p class='text-danger'>Better luck next time, your grade is: <b>" + grade + "</b>%</p>";
+          } else if (grade >= 75 && grade < 90) {
+            message = "<p class='text-warning'>Almost! But I know that you can do better than <b>" + grade + "</b>%!</p>";
+          } else if (grade >= 90) {
+            message = "<p class='text-success'>Congrats! Your grade is: <b>" + grade + "</b>%!</p>";
+          }
+          resultElement.innerHTML = message;
         }
+
       };
 
       reader.onerror = function() {
@@ -167,14 +209,27 @@
               <input type="file" class="form-control" id="customFileA" accept=".csv,.xls,.xlsx" onchange="validateFileInput(this.id);">
               <input type="text" class="form-control my-3" id="teachersTextInput" placeholder="Enter secret key/passphrase">
               <div class="d-flex justify-content-center">
-                <input type="submit" class="my-2 justify-content-center" id="teachersSubmit" value="Encrypt" onclick="return false;" disabled>
+                <input type="submit" class="my-2 justify-content-center" id="teachersSubmit" value="Encrypt" onclick="encrypt();" disabled>
               </div>
             <hr class="my-12"/>
             <div id="teachersOutput" ><p class="text-danger">Please fill out all required fields.</p></div>
+
+            <!-- Generate Sample CSV Function -->
+            <button href="#collapso" type="button" class="btn btn-secondary btn-lg my-3" data-toggle="collapse">Generate Sample CSV</button>
+            <div id="collapso" class="collapse border p-3 mb-2 bg-secondary text-white">
+              <!-- <label for="rangeCol" class="form-label">No. of Columns</label>
+              <input type="range" class="form-range ml-3" id="rangeCol" min="1" max="20" value="10">
+              <output id="outputCol"></output><br> -->
+              <label for="rangeRow" class="form-label">No. of Students</label>
+              <input type="range" class="form-range ml-3 mx-3" id="rangeRow" min="1" max="200" value="50" step="1">
+              <output id="outputRow" class="font-weight-bold"></output><br>
+              <button type="button" class="btn btn-outline-light" onclick="generateCSV();">Generate</button>
+            </div>
           </div>
+
+            <!-- Vertical Line Separator -->
             <div class="linesu ml-3 mr-3"></div>
           
-
           <!-- Students -->
           <div class="col-sm">
             <h1><span class="label label-default">Students</span></h1>
@@ -190,22 +245,12 @@
             <hr class="my-12"/>
             <div id="studentsOutput" class="text-info"><p class="text-danger">Please fill out all required fields.</p></div>
           </div>
+
         </div>
         <hr class="hr hr-blurry" />
     </div>
 
-    <button href="#collapso" type="button" class="btn btn-secondary btn-lg mt-3 mb-3" data-toggle="collapse">Generate Sample CSV</button>
-    <div id="collapso" class="collapse border p-3 mb-2 bg-secondary text-white">
-
-      <!-- <label for="rangeCol" class="form-label">No. of Columns</label>
-      <input type="range" class="form-range ml-3" id="rangeCol" min="1" max="20" value="10">
-      <output id="outputCol"></output><br> -->
-
-      <label for="rangeRow" class="form-label">No. of Students</label>
-      <input type="range" class="form-range ml-3 mx-3" id="rangeRow" min="1" max="200" value="50" step="1">
-      <output id="outputRow" class="font-weight-bold"></output><br>
-      <button type="button" class="btn btn-outline-light my-3" onclick="generateCSV();">Generate</button>
-    </div>
+    
     <script>
     var sliderRow = document.getElementById("rangeRow");
     var outputRow = document.getElementById("outputRow");
