@@ -114,14 +114,14 @@
               return cells[gradeIndex].trim();
           }
       }
-
+      // resultElement.innerHTML = "<p class='text-danger'>Student not found. Please check your input and try again.</p>"
       return 'Student not found. Please check your input and try again.';
     }
 
     //Test Submit Function
     function retrieveGrade() {
       const fileInput = document.getElementById('customFileB');
-      const studentNumber = document.getElementById('studentsTextInputA').value.trim();
+      const studentNumber = document.getElementById('studentsTextInputA').value;
       const resultElement = document.getElementById('studentsOutput');
 
       if (!fileInput.files.length) {
@@ -135,13 +135,18 @@
 
       reader.onload = function(e) {
         const csvData = e.target.result;
-        const grade = retrieveGradeByStudentNo(csvData, studentNumber);
-        console.log("StudentNo: " + studentNumber)
-        console.log("Grade: " + grade)
+        const grade = Number(retrieveGradeByStudentNo(csvData, studentNumber));
+        
+        console.log("StudentNo: " + studentNumber);
+        console.log("Grade: " + grade);
+        console.log(typeof studentNumber);
         if (studentNumber === "") {
-          resultElement.textContent = 'Invalid student number. Please try again.'
+          resultElement.innerHTML = "<p class='text-danger'>Invalid student number. Please try again.</p>";
+        } else if (!Number.isInteger(grade)) {
+          resultElement.innerHTML = "<p class='text-danger'>Student not found. Please try again.</p>";
         } else {
-          resultElement.textContent = `The grade for student number ${studentNumber} is: ${grade}`;
+          // resultElement.textContent = `The grade for student number ${studentNumber} is: ${grade}`;
+          resultElement.innerHTML = "<p class='text-success'>The grade for student number <b>" + studentNumber + "</b> is: <b>" + grade + "</b></p>";
         }
       };
 
@@ -176,7 +181,7 @@
             <label class="form-label my-3" for="customFileB" pattern="^.+\.(xlsx|xls|csv)$">File Upload (Existing CSV)</label>
               <input type="file" class="form-control" id="customFileB" accept=".csv,.xls,.xlsx" onchange="validateFileInput(this.id);"/>
               <div class="d-flex justify-content-center">
-                <input type="text" class="form-control my-3 mr-1" id="studentsTextInputA" placeholder="Enter Student No."/>
+                <input type="number" class="form-control my-3 mr-1" id="studentsTextInputA" placeholder="Enter Student No."/>
                 <input type="text" class="form-control my-3 ml-1" id="studentsTextInputB" placeholder="Enter secret key/passphrase" />
               </div>
               <div class="d-flex justify-content-center">
