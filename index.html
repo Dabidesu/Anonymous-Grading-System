@@ -20,6 +20,10 @@
       input::-webkit-inner-spin-button {
         -webkit-appearance: none;
       }
+
+      .strikethrough:checked + .strikeTesto {
+        text-decoration: line-through
+      }
     </style>
 </head>
   <body>
@@ -136,28 +140,27 @@
         }
 
     // Decrypt Function
-    function retrieveGradeByStudentNo(csvData, studentNumber) {
-      const lines = csvData.trim().split('\n');
+    // function retrieveGradeByStudentNo(csvData, studentNumber) {
+    //   const lines = csvData.trim().split('\n');
       
-      const headers = lines[0].split(',');
+    //   const headers = lines[0].split(',');
 
-      const studentNoIndex = headers.indexOf('Student No.');
-      // To fix (\r)
-      const gradeIndex = headers.indexOf('Grade (%)\r');
-      if (studentNoIndex === -1 || gradeIndex === -1) {
-          return '{Error: Invalid file format}';
-      }
+    //   const studentNoIndex = headers.indexOf('Student No.');
+    //   // To fix (\r)
+    //   const gradeIndex = headers.indexOf('Grade (%)\r');
+    //   if (studentNoIndex === -1 || gradeIndex === -1) {
+    //       return '{Error: Invalid file format}';
+    //   }
 
-      for (let i = 1; i < lines.length; i++) {
-          const cells = lines[i].split(',');
+    //   for (let i = 1; i < lines.length; i++) {
+    //       const cells = lines[i].split(',');
 
-          if (cells[studentNoIndex].trim() == studentNumber) {
-              return cells[gradeIndex].trim();
-          }
-      }
-      // resultElement.innerHTML = "<p class='text-danger'>Student not found. Please check your input and try again.</p>"
-      return 'Student not found. Please check your input and try again.';
-    }
+    //       if (cells[studentNoIndex].trim() == studentNumber) {
+    //           return cells[gradeIndex].trim();
+    //       }
+    //   }
+    //   return 'Student not found. Please check your input and try again.';
+    // }
 
     // Test Submit Function
     function retrieveGrade() {
@@ -196,8 +199,6 @@
 
       reader.readAsText(file);
     }
-
-
 
     // Test Decrypt Function
     function decryptCSV(csvContent, encryptedStudentNumber, key) {
@@ -284,6 +285,25 @@
 
         </div>
         <hr class="hr hr-blurry" />
+        
+        <!-- Website To-Do List -->
+        <div class="container">
+          <div class="form-group row">
+            <label for="inputName" class="col-md-12 col-form-label"><b>**Website is still a work-in-progress (WIP)**</b></label>
+            <p>To-Do List:</p>
+            <div class="col-md-5">
+              <input name="packersOff" class="strikethrough" value="1" type="checkbox" checked>
+              <label for="packersOff" class="strikeTesto">Add Encrypt & Decrypt Functions</label><br>
+              
+              <input name="packersOff" class="strikethrough" value="1" type="checkbox" >
+              <label for="packersOff" class="strikeTesto">Add more encryption algorithms</label><br>
+
+              <input name="packersOff" class="strikethrough" value="2" type="checkbox" >
+              <label for="packersOff" class="strikeTesto">Add a tutorial section</label>
+            </div>
+          </div>
+        </div>
+
     </div>
 
     
