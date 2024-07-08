@@ -125,8 +125,6 @@
             reader.onload = function(e) {
                 const csvData = e.target.result;
                 const encryptedCSV = encryptCSV(csvData, key);
-                // document.getElementById('output').textContent = encryptedCSV;
-                console.log(encryptedCSV)
                 downloadFile(encryptedCSV, 'encrypted.csv', 'text/csv');
             };
 
@@ -203,17 +201,13 @@
 
     // Test Decrypt Function
     function decryptCSV(csvContent, encryptedStudentNumber, key) {
-      // console.log("DecryptF");
       const rows = csvContent.split('\n');
       for (let i = 1; i < rows.length; i++) { 
           let columns = rows[i].split(',');
           if (columns.length > 1) {
-            console.log("True");
-            console.log(columns[0]);
               const decryptedStudentNumber = CryptoJS.AES.decrypt(columns[0], key).toString(CryptoJS.enc.Utf8);
-              console.log(decryptedStudentNumber);
               if (decryptedStudentNumber === encryptedStudentNumber) {
-                  return columns[0]; // Assuming grade is in the second column
+                  return columns[1]; 
               }
           }
       }
@@ -221,13 +215,9 @@
     }
 
     function decrypt() {
-      console.log("Decrypt");
       const fileInput = document.getElementById('customFileB');
       const encryptedStudentNumber = document.getElementById('studentsTextInputA').value;
       const key = document.getElementById('studentsTextInputB').value;
-
-      console.log(encryptedStudentNumber);
-      console.log(key);
 
       const file = fileInput.files[0];
       const reader = new FileReader();
@@ -236,7 +226,6 @@
           const csvData = e.target.result;
           const grade = decryptCSV(csvData, encryptedStudentNumber, key);
           document.getElementById('studentsOutput').textContent = 'Grade: ' + grade;
-          // console.log("Grade: " + grade)
       };
 
       if (file) {
